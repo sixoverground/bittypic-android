@@ -13,9 +13,13 @@ This is a proof of concept app to show how a streamlined, mobile-backend-as-a-se
 - Real-time push data
 - Push notifications
 
-This app makes heavy use of Firebase and OneSignal to support its feature set. 
+This project was built to support the concepts outlined in a presentation for [AnDevCon Boston](http://www.andevcon.com/). 
+
+[View the presentation](http://www.slideshare.net/CraigPhares/bootstrapping-an-app-for-launch)
 
 ### Getting Started
+
+This app uses Firebase and OneSignal to support its feature set. 
 
 - Create a new [Firebase project](https://firebase.google.com/)
 - Create a new [Facebook app](https://developers.facebook.com/)
