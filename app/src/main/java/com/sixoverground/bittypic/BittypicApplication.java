@@ -2,9 +2,12 @@ package com.sixoverground.bittypic;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.onesignal.OSNotificationAction;
+import com.onesignal.OSNotificationOpenResult;
 import com.onesignal.OneSignal;
 import com.sixoverground.bittypic.models.BittypicModel;
 import com.sixoverground.bittypic.services.BittypicService;
@@ -34,7 +37,6 @@ public class BittypicApplication extends Application {
     sInstance = this;
     mContext = getApplicationContext();
 
-    FacebookSdk.sdkInitialize(getApplicationContext());
     AppEventsLogger.activateApp(this);
 
     OneSignal.startInit(this)
@@ -56,23 +58,14 @@ public class BittypicApplication extends Application {
 
   private class BittypicNotificationOpenedHandler implements OneSignal.NotificationOpenedHandler {
     @Override
-    public void notificationOpened(String message, JSONObject additionalData, boolean isActive) {
-      try {
-        if (additionalData != null) {
-        }
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-
-      // The following can be used to open an Activity of your choice.
-      /*
-      Intent intent = new Intent(getApplication(), YourActivity.class);
-      intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
-      startActivity(intent);
-      */
-      // Follow the instructions in the link below to prevent the launcher Activity from starting.
-      // https://documentation.onesignal.com/docs/android-notification-customizations#changing-the-open-action-of-a-notification
-
+    public void notificationOpened(OSNotificationOpenResult result) {
+      OSNotificationAction.ActionType actionType = result.action.type;
+//      JSONObject data = result.notification.payload.additionalData;
+//      if (data != null) {
+//
+//      }
+      if (actionType == OSNotificationAction.ActionType.ActionTaken)
+        Log.i(TAG, "Button pressed with id: " + result.action.actionID);
     }
   }
 

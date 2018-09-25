@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.sixoverground.bittypic.R;
 import com.sixoverground.bittypic.models.BittypicModel;
 import com.sixoverground.bittypic.models.Photo;
@@ -55,15 +56,15 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
     Photo photo = mValues.get(position);
     holder.mItem = photo;
 
-    Glide.clear(holder.mPhotoImage);
     Context photoContext = holder.mPhotoImage.getContext();
-    if (photoContext != null) {
-      Glide
-          .with(photoContext)
-          .load(photo.url)
-          .centerCrop()
-          .into(holder.mPhotoImage);
-    }
+    Glide.with(photoContext).clear(holder.mPhotoImage);
+    RequestOptions options = new RequestOptions()
+        .centerCrop();
+    Glide
+        .with(photoContext)
+        .load(photo.url)
+        .apply(options)
+        .into(holder.mPhotoImage);
 
     CharSequence caption = "";
 
@@ -89,15 +90,13 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
 
     User user = BittypicModel.getInstance().getUser(photo.user);
     if (user != null) {
-      Glide.clear(holder.mProfileImage);
       Context profileContext = holder.mProfileImage.getContext();
-      if (profileContext != null) {
-        Glide
-            .with(profileContext)
-            .load(user.photoUrl)
-            .centerCrop()
-            .into(holder.mProfileImage);
-      }
+      Glide.with(profileContext).clear(holder.mProfileImage);
+      Glide
+          .with(profileContext)
+          .load(user.photoUrl)
+          .apply(options)
+          .into(holder.mProfileImage);
 
       holder.mDisplayNameText.setText(user.displayName);
 

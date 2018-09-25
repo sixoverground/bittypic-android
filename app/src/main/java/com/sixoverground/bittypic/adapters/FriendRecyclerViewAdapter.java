@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.sixoverground.bittypic.R;
 import com.sixoverground.bittypic.models.BittypicModel;
 import com.sixoverground.bittypic.models.User;
@@ -44,15 +45,15 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
     User user = mValues.get(position);
     holder.mItem = user;
 
-    Glide.clear(holder.mProfileImage);
     Context profileContext = holder.mProfileImage.getContext();
-    if (profileContext != null) {
-      Glide
-          .with(profileContext)
-          .load(user.photoUrl)
-          .centerCrop()
-          .into(holder.mProfileImage);
-    }
+    Glide.with(profileContext).clear(holder.mProfileImage);
+    RequestOptions options = new RequestOptions()
+        .centerCrop();
+    Glide
+        .with(profileContext)
+        .load(user.photoUrl)
+        .apply(options)
+        .into(holder.mProfileImage);
 
     holder.mDisplayNameText.setText(user.displayName);
 

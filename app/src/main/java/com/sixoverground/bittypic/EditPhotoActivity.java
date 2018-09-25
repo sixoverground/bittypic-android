@@ -13,9 +13,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sixoverground.bittypic.models.Photo;
@@ -65,16 +70,15 @@ public class EditPhotoActivity extends AppCompatActivity {
     mCaptionText = (EditText) findViewById(R.id.text_caption);
 
     mPhotoUri = Uri.parse(mPhoto);
-    Glide.clear(mPhotoImage);
     Context context = mPhotoImage.getContext();
-    if (context != null) {
-      Glide
-          .with(context)
-          .load(mPhotoUri)
-          .centerCrop()
-          .into(mPhotoImage);
-    }
-
+    Glide.with(context).clear(mPhotoImage);
+    RequestOptions options = new RequestOptions()
+        .centerCrop();
+    Glide
+        .with(context)
+        .load(mPhotoUri)
+        .apply(options)
+        .into(mPhotoImage);
   }
 
   @Override
@@ -117,24 +121,48 @@ public class EditPhotoActivity extends AppCompatActivity {
       StorageReference storageRef = storage.getReferenceFromUrl(getResources().getString(R.string.firebase_bucket));
       String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
       String fileName = "photo_"+ timeStamp + ".jpg";
-      StorageReference photoRef = storageRef.child("photos/" + fileName);
+      final StorageReference photoRef = storageRef.child("photos/" + fileName);
 
       UploadTask uploadTask = photoRef.putBytes(data);
-      uploadTask.addOnFailureListener(new OnFailureListener() {
+
+//      uploadTask.addOnFailureListener(new OnFailureListener() {
+//        @Override
+//        public void onFailure(@NonNull Exception exception) {
+//          // Handle unsuccessful uploads
+//        }
+//      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//        @Override
+//        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//          // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+//          Uri downloadUrl = taskSnapshot.getDownloadUrl();
+//          savePhoto(downloadUrl);
+//        }
+//      });
+
+      Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
         @Override
-        public void onFailure(@NonNull Exception exception) {
-          // Handle unsuccessful uploads
+        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+          if (!task.isSuccessful()) {
+            throw task.getException();
+          }
+
+          // Continue with the task to get the download URL
+          return photoRef.getDownloadUrl();
         }
-      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      }).addOnCompleteListener(new OnCompleteListener<Uri>() {
         @Override
-        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-          // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-          Uri downloadUrl = taskSnapshot.getDownloadUrl();
-
-          savePhoto(downloadUrl);
-
+        public void onComplete(@NonNull Task<Uri> task) {
+          if (task.isSuccessful()) {
+            Uri downloadUri = task.getResult();
+            savePhoto(downloadUri);
+          } else {
+            // Handle failures
+            // ...
+          }
         }
       });
+
+
     }
 
   }
